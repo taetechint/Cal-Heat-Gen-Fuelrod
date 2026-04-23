@@ -1,38 +1,179 @@
-â¬¡ Hexagonal Fuel â€” Heat Gen Calculator
-SIDE LENGTH (A)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hexagonal Fuel — Heat Gen Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f9f9f9;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 28px 28px 24px;
+      width: 100%;
+      max-width: 560px;
+    }
+    h1 { font-size: 17px; font-weight: 700; margin-bottom: 20px; color: #111; }
+    h1 span { color: #e05a00; }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .input-group { display: flex; flex-direction: column; gap: 5px; }
+    .input-group label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+    .input-row {
+      display: flex; align-items: center;
+      background: #f5f5f5;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .input-row:focus-within { border-color: #e05a00; background: #fff8f3; }
+    .input-row input {
+      flex: 1; border: none; background: transparent;
+      padding: 10px 10px; font-size: 15px; font-weight: 600;
+      color: #111; outline: none; width: 0;
+    }
+    .input-row .unit { padding: 10px 10px 10px 2px; font-size: 12px; color: #aaa; white-space: nowrap; }
+    .divider { height: 1px; background: #ececec; margin: 0 0 18px; }
+    .results { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .result-card { background: #f5f5f5; border-radius: 10px; padding: 13px 14px; }
+    .result-card.highlight { background: #fff3e0; border: 1.5px solid #e05a00; }
+    .r-label { font-size: 10px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .r-val { font-size: 21px; font-weight: 800; color: #111; line-height: 1.1; }
+    .result-card.highlight .r-val { color: #e05a00; }
+    .r-unit { font-size: 12px; font-weight: 400; color: #888; margin-left: 2px; }
+    .r-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+    .detail-table { background: #f5f5f5; border-radius: 10px; padding: 13px 15px; }
+    .dt-title { font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .dt-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid #e8e8e8; font-size: 12.5px;
+    }
+    .dt-row:last-child { border-bottom: none; }
+    .dk { color: #666; }
+    .dv { font-weight: 700; font-family: monospace; font-size: 12px; color: #111; text-align: right; }
+    .formula { font-size: 11px; color: #bbb; margin-top: 12px; font-style: italic; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>&#11041; Hexagonal Fuel &mdash; <span>Heat Gen Calculator</span></h1>
 
-mm
-HEIGHT (H)
+  <div class="input-grid">
+    <div class="input-group">
+      <label>Side Length (a)</label>
+      <div class="input-row">
+        <input type="number" id="side" value="52.25" step="0.01" min="0.01">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Height (h)</label>
+      <div class="input-row">
+        <input type="number" id="height" value="65" step="0.1" min="0.1">
+        <span class="unit">cm</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Total Power (P)</label>
+      <div class="input-row">
+        <input type="number" id="power" value="8.6" step="0.1" min="0">
+        <span class="unit">MW</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>No. of Elements (n)</label>
+      <div class="input-row">
+        <input type="number" id="nelements" value="12" step="1" min="1">
+        <span class="unit">pcs</span>
+      </div>
+    </div>
+  </div>
 
-cm
-TOTAL POWER (P)
+  <div class="divider"></div>
 
-MW
-NO. OF ELEMENTS (N)
+  <div class="results">
+    <div class="result-card highlight">
+      <div class="r-label">Volumetric Heat Gen q&#8244;</div>
+      <div class="r-val"><span id="qvol">&mdash;</span><span class="r-unit">MW/m&sup3;</span></div>
+      <div class="r-sub" id="qvol_sub">&mdash;</div>
+    </div>
+    <div class="result-card">
+      <div class="r-label">Surface Heat Flux q&#8243;</div>
+      <div class="r-val"><span id="qflux">&mdash;</span><span class="r-unit">kW/m&sup2;</span></div>
+      <div class="r-sub" id="qflux_sub">&mdash;</div>
+    </div>
+    <div class="result-card">
+      <div class="r-label">Linear Heat Rate q&#8242;</div>
+      <div class="r-val"><span id="qlin">&mdash;</span><span class="r-unit">kW/m</span></div>
+      <div class="r-sub">per element</div>
+    </div>
+    <div class="result-card">
+      <div class="r-label">Total Fuel Volume</div>
+      <div class="r-val"><span id="vtotal">&mdash;</span><span class="r-unit">L</span></div>
+      <div class="r-sub" id="vtotal_sub">&mdash;</div>
+    </div>
+  </div>
 
-pcs
+  <div class="detail-table">
+    <div class="dt-title">Geometry Details</div>
+    <div class="dt-row"><span class="dk">Hex cross-section area (A<sub>hex</sub>)</span><span class="dv" id="ahex">&mdash;</span></div>
+    <div class="dt-row"><span class="dk">Volume per element</span><span class="dv" id="vone">&mdash;</span></div>
+    <div class="dt-row"><span class="dk">Lateral surface per element</span><span class="dv" id="slat">&mdash;</span></div>
+    <div class="dt-row"><span class="dk">Total lateral surface (n &times;)</span><span class="dv" id="slat_total">&mdash;</span></div>
+    <div class="dt-row"><span class="dk">Heat per element</span><span class="dv" id="p_per">&mdash;</span></div>
+  </div>
 
-VOLUMETRIC HEAT GEN QÂ€´
-â€”MW/mÂ³
-â€”
-SURFACE HEAT FLUX QÂ€³
-â€”kW/mÂ²
-â€”
-LINEAR HEAT RATE QÂ€²
-â€”kW/m
-per element
-TOTAL FUEL VOLUME
-â€”L
-â€”
-GEOMETRY DETAILS
-Hex cross-section area (Ahex)
-â€”
-Volume per element
-â€”
-Lateral surface per element
-â€”
-Total lateral surface (n Ã—)
-â€”
-Heat per element
-â€”
-Ahex = (3âˆš3/2)Â·aÂ²  |  qâ€´ = P / Vtotal  |  qâ€³ = P / Alateral,total
+  <div class="formula">A<sub>hex</sub> = (3&radic;3/2)&middot;a&sup2; &nbsp;|&nbsp; q&#8244; = P / V<sub>total</sub> &nbsp;|&nbsp; q&#8243; = P / A<sub>lateral,total</sub></div>
+</div>
+
+<script>
+  function calc() {
+    const a = parseFloat(document.getElementById('side').value) * 1e-3;
+    const h = parseFloat(document.getElementById('height').value) * 1e-2;
+    const P = parseFloat(document.getElementById('power').value) * 1e6;
+    const n = parseInt(document.getElementById('nelements').value);
+
+    if ([a, h, P, n].some(v => isNaN(v) || v <= 0)) return;
+
+    const A_hex     = (3 * Math.sqrt(3) / 2) * a * a;
+    const V_one     = A_hex * h;
+    const V_total   = n * V_one;
+    const perim     = 6 * a;
+    const A_lat_one = perim * h;
+    const A_lat_tot = n * A_lat_one;
+    const q_vol     = P / V_total;
+    const q_flux    = P / A_lat_tot;
+    const q_lin     = P / (n * h);
+
+    const f = (v, d=2) => v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+    document.getElementById('qvol').textContent       = f(q_vol / 1e6);
+    document.getElementById('qvol_sub').textContent   = f(q_vol / 1e3, 0) + ' kW/m\u00b3';
+    document.getElementById('qflux').textContent      = f(q_flux / 1e3);
+    document.getElementById('qflux_sub').textContent  = f(q_flux / 1e6) + ' MW/m\u00b2';
+    document.getElementById('qlin').textContent       = f(q_lin / 1e3);
+    document.getElementById('vtotal').textContent     = f(V_total * 1e3);
+    document.getElementById('vtotal_sub').textContent = f(V_total, 5) + ' m\u00b3';
+
+    document.getElementById('ahex').textContent       = f(A_hex * 1e6) + ' mm\u00b2  (' + f(A_hex * 1e4) + ' cm\u00b2)';
+    document.getElementById('vone').textContent       = f(V_one * 1e3) + ' L  (' + f(V_one * 1e6, 0) + ' cm\u00b3)';
+    document.getElementById('slat').textContent       = f(A_lat_one * 1e4) + ' cm\u00b2  (' + f(A_lat_one, 4) + ' m\u00b2)';
+    document.getElementById('slat_total').textContent = f(A_lat_tot, 4) + ' m\u00b2';
+    document.getElementById('p_per').textContent      = f(P / n / 1e3) + ' kW  (' + f(P / n / 1e6, 4) + ' MW)';
+  }
+
+  document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+</body>
+</html>
